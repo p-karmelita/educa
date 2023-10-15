@@ -10,4 +10,3 @@ def model_name(obj):
         return obj._meta.model_name
     except AttributeError:
         return None
-    
