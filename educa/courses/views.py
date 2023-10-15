@@ -63,6 +63,17 @@ class ContentCreateUpdateView(TemplateResponseMixin, View):
                                         'object': self.obj})
 
 
+class ContentDeleteView(View):
+    def post(self, request, id):
+        content = get_object_or_404(Content,
+                                    id=id,
+                                    module__course__owner=request.user)
+        module = content.module
+        content.item.delete()
+        content.delete()
+        return redirect('module_content_list', module.id)
+
+
 class OwnerMixin:
     def get_queryset(self):
         qs = super().get_queryset()
