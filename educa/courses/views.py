@@ -9,6 +9,8 @@ from django.urls import reverse_lazy
 from django.db.models import Count
 from django.views.generic.detail import DetailView
 from django.core.cache import cache
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from .models import Course, Module, Content, Subject
 from .forms import ModuleFormSet
 from braces.views import CsrfExemptMixin, JsonRequestResponseMixin
@@ -222,3 +224,10 @@ class CourseDetailView(DetailView):
             initial={'course': self.object}
         )
         return context
+
+
+class CourseEnrollView(APIView):
+    def post(self, request, pk, format=None):
+        course = get_object_or_404(Course, pk=pk)
+        course.students.add(request.user)
+        return Response({'endrolled': True})
