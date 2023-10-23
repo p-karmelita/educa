@@ -9,22 +9,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user = self.scope['user']
         self.id = self.scope['url_route']['kwargs']['course_id']
         self.room_group_name = f'chat_{self.id}'
+        # join room group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
-        self.accept()
+        # accept connection
+        await self.accept()
 
     async def disconnect(self, close_code):
+        # leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
 
+    # receive message from WebSocket
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
         now = timezone.now()
+        # send message to room group
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -34,7 +39,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'datetime': now.isoformat(),
             }
         )
-        self.send(text_data=json.dumps({'message': message}))
 
+    # receive message from room group
     async def chat_message(self, event):
+        # send message to WebSocket
         await self.send(text_data=json.dumps(event))
+        
